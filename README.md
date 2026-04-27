@@ -17,21 +17,22 @@ AWS IAM Security Auditor scans an AWS account's IAM configuration and surfaces m
 ## Architecture
 
 ![Architecture Diagram](docs/architecture.png)
+
 <!-- Placeholder: draw.io diagram to be added. Will show: CLI → IAMAuditor → 6 check functions → boto3/moto IAM client → Reporter → JSON + HTML outputs -->
 
 ---
 
 ## Security Checks
 
-| Check | Severity | CIS Control | Description |
-|---|---|---|---|
-| Root account access keys | HIGH | CIS 1.4 | Flags if the root account has active programmatic access keys |
-| Root account MFA | HIGH | CIS 1.5 | Flags if multi-factor authentication is not enabled on root |
-| Console users without MFA | HIGH | CIS 1.10 | Finds IAM users with a console login profile but no MFA device |
-| Overly permissive policies | HIGH / MEDIUM | CIS 1.22 | Detects customer-managed policies with `Action:*`+`Resource:*` (HIGH) or service-level wildcards like `s3:*` on `Resource:*` (MEDIUM) |
-| Stale access keys | MEDIUM | CIS 1.14 | Flags active access keys not rotated within a configurable threshold (default 90 days) |
-| Inactive console users | LOW | CIS 1.15 | Finds users who haven't logged in via the console within the configured threshold (default 180 days) |
-| Account password policy | MEDIUM | CIS 1.8–1.11 | Checks minimum length (14), complexity requirements, max age (90 days), and reuse prevention (24 passwords) |
+| Check                      | Severity      | CIS Control  | Description                                                                                                                           |
+| -------------------------- | ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Root account access keys   | HIGH          | CIS 1.4      | Flags if the root account has active programmatic access keys                                                                         |
+| Root account MFA           | HIGH          | CIS 1.5      | Flags if multi-factor authentication is not enabled on root                                                                           |
+| Console users without MFA  | HIGH          | CIS 1.10     | Finds IAM users with a console login profile but no MFA device                                                                        |
+| Overly permissive policies | HIGH / MEDIUM | CIS 1.22     | Detects customer-managed policies with `Action:*`+`Resource:*` (HIGH) or service-level wildcards like `s3:*` on `Resource:*` (MEDIUM) |
+| Stale access keys          | MEDIUM        | CIS 1.14     | Flags active access keys not rotated within a configurable threshold (default 90 days)                                                |
+| Inactive console users     | LOW           | CIS 1.15     | Finds users who haven't logged in via the console within the configured threshold (default 180 days)                                  |
+| Account password policy    | MEDIUM        | CIS 1.8–1.11 | Checks minimum length (14), complexity requirements, max age (90 days), and reuse prevention (24 passwords)                           |
 
 ---
 
@@ -90,9 +91,6 @@ MEDIUM      S3WildcardAllBuckets  overly_permissive_policies  ...
 ```
 
 ### HTML Report
-
-![HTML Report Screenshot](docs/sample_report_screenshot.png)
-<!-- Placeholder: screenshot of sample_output/sample_report.html to be added -->
 
 The generated HTML report (`sample_output/sample_report.html`) is a single self-contained file with no external dependencies. It shows summary cards by severity, a findings table grouped by severity with color-coded row stripes (red/orange/yellow), and full remediation guidance per finding.
 
@@ -183,9 +181,10 @@ These are the natural next checks after the current 6:
 ## Author
 
 **Yunjae Jung**
-- GitHub: [github.com/YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- LinkedIn: [linkedin.com/in/YOUR_PROFILE](https://linkedin.com/in/YOUR_PROFILE)
+
+- GitHub: [github.com/YOUR_USERNAME](https://github.com/yoonjae0402)
+- LinkedIn: [linkedin.com/in/YOUR_PROFILE](https://linkedin.com/in/yunjae-jung-99a13b221)
 
 ---
 
-*MIT License*
+_MIT License_
