@@ -14,14 +14,6 @@ AWS IAM Security Auditor scans an AWS account's IAM configuration and surfaces m
 
 ---
 
-## Architecture
-
-![Architecture Diagram](docs/architecture.png)
-
-<!-- Placeholder: draw.io diagram to be added. Will show: CLI → IAMAuditor → 6 check functions → boto3/moto IAM client → Reporter → JSON + HTML outputs -->
-
----
-
 ## Security Checks
 
 | Check                      | Severity      | CIS Control  | Description                                                                                                                           |
