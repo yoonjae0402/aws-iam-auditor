@@ -1,0 +1,134 @@
+{
+  "metadata": {
+    "scan_time": "2026-04-27T20:03:56.691138+00:00",
+    "account_id": "123456789012 (mock)",
+    "total_findings": 15,
+    "findings_by_severity": {
+      "HIGH": 5,
+      "MEDIUM": 8,
+      "LOW": 2
+    }
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "check_name": "root_account_usage",
+      "resource_type": "AWSAccount",
+      "resource_name": "root",
+      "description": "The root account does not have MFA enabled. Root account compromise without MFA allows an attacker immediate, unrestricted access to all AWS resources.",
+      "remediation": "Enable MFA on the root account: AWS Console \u2192 account menu \u2192 Security credentials \u2192 Multi-factor authentication (MFA) \u2192 Activate MFA. A hardware MFA device is recommended for root."
+    },
+    {
+      "severity": "HIGH",
+      "check_name": "users_without_mfa",
+      "resource_type": "IAMUser",
+      "resource_name": "carol.white",
+      "description": "IAM user 'carol.white' has console access but no MFA device is enabled.",
+      "remediation": "Assign an MFA device: IAM console \u2192 Users \u2192 {username} \u2192 Security credentials \u2192 Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true."
+    },
+    {
+      "severity": "HIGH",
+      "check_name": "users_without_mfa",
+      "resource_type": "IAMUser",
+      "resource_name": "dave.chen",
+      "description": "IAM user 'dave.chen' has console access but no MFA device is enabled.",
+      "remediation": "Assign an MFA device: IAM console \u2192 Users \u2192 {username} \u2192 Security credentials \u2192 Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true."
+    },
+    {
+      "severity": "HIGH",
+      "check_name": "users_without_mfa",
+      "resource_type": "IAMUser",
+      "resource_name": "henry.nguyen",
+      "description": "IAM user 'henry.nguyen' has console access but no MFA device is enabled.",
+      "remediation": "Assign an MFA device: IAM console \u2192 Users \u2192 {username} \u2192 Security credentials \u2192 Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true."
+    },
+    {
+      "severity": "HIGH",
+      "check_name": "overly_permissive_policies",
+      "resource_type": "IAMPolicy",
+      "resource_name": "AdminWildcardPolicy",
+      "description": "Customer-managed policy 'AdminWildcardPolicy' grants full admin wildcard (Action:* + Resource:*). ARN: arn:aws:iam::123456789012:policy/AdminWildcardPolicy",
+      "remediation": "Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "overly_permissive_policies",
+      "resource_type": "IAMPolicy",
+      "resource_name": "IAMFullAccess",
+      "description": "Customer-managed policy 'IAMFullAccess' grants service-level wildcard action on all resources. ARN: arn:aws:iam::123456789012:policy/IAMFullAccess",
+      "remediation": "Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "overly_permissive_policies",
+      "resource_type": "IAMPolicy",
+      "resource_name": "S3WildcardAllBuckets",
+      "description": "Customer-managed policy 'S3WildcardAllBuckets' grants service-level wildcard action on all resources. ARN: arn:aws:iam::123456789012:policy/S3WildcardAllBuckets",
+      "remediation": "Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "unused_access_keys",
+      "resource_type": "IAMUser",
+      "resource_name": "eve.martinez",
+      "description": "Active access key AKIARZPUZDIKJEI6QQ7M for user 'eve.martinez' is 120 day(s) old (never used). Keys should be rotated every 90 days.",
+      "remediation": "Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "unused_access_keys",
+      "resource_type": "IAMUser",
+      "resource_name": "frank.lee",
+      "description": "Active access key AKIARZPUZDIKBXO2AFUG for user 'frank.lee' is 180 day(s) old (never used). Keys should be rotated every 90 days.",
+      "remediation": "Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "unused_access_keys",
+      "resource_type": "IAMUser",
+      "resource_name": "grace.kim",
+      "description": "Active access key AKIARZPUZDIKK4J7NTPD for user 'grace.kim' is 200 day(s) old (never used). Keys should be rotated every 90 days.",
+      "remediation": "Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "unused_access_keys",
+      "resource_type": "IAMUser",
+      "resource_name": "henry.nguyen",
+      "description": "Active access key AKIARZPUZDIKPPKLDTAS for user 'henry.nguyen' is 210 day(s) old (never used). Keys should be rotated every 90 days.",
+      "remediation": "Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "unused_access_keys",
+      "resource_type": "IAMUser",
+      "resource_name": "svc.deploy",
+      "description": "Active access key AKIARZPUZDIKBLGAMWZH for user 'svc.deploy' is 365 day(s) old (never used). Keys should be rotated every 90 days.",
+      "remediation": "Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key."
+    },
+    {
+      "severity": "MEDIUM",
+      "check_name": "password_policy",
+      "resource_type": "AWSAccount",
+      "resource_name": "password_policy",
+      "description": "No IAM account password policy is configured. Without a policy, IAM users can set any password with no complexity, expiry, or reuse restrictions.",
+      "remediation": "Create a password policy: IAM console \u2192 Account settings \u2192 Edit password policy, or via CLI: aws iam update-account-password-policy --minimum-password-length 14 --require-symbols --require-numbers --require-uppercase-characters --require-lowercase-characters --max-password-age 90 --password-reuse-prevention 24"
+    },
+    {
+      "severity": "LOW",
+      "check_name": "inactive_users",
+      "resource_type": "IAMUser",
+      "resource_name": "grace.kim",
+      "description": "IAM user 'grace.kim' appears inactive: last active 95 day(s) ago (mock data). Threshold is 90 day(s).",
+      "remediation": "Confirm whether the user still needs access. If not, disable the login profile and deactivate access keys, or delete the user entirely. Use IAM Access Advisor to verify the last service access dates."
+    },
+    {
+      "severity": "LOW",
+      "check_name": "inactive_users",
+      "resource_type": "IAMUser",
+      "resource_name": "henry.nguyen",
+      "description": "IAM user 'henry.nguyen' appears inactive: last active 100 day(s) ago (mock data). Threshold is 90 day(s).",
+      "remediation": "Confirm whether the user still needs access. If not, disable the login profile and deactivate access keys, or delete the user entirely. Use IAM Access Advisor to verify the last service access dates."
+    }
+  ]
+}

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS IAM Security Audit Report</title>
+  <style>
+    /* ---- Reset & base ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #f0f2f5;
+      color: #1a1a2e;
+    }
+
+    /* ---- Layout ---- */
+    .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+
+    /* ---- Header ---- */
+    .header {
+      background: #1a1a2e;
+      color: #fff;
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .header h1 span { color: #f59e0b; }
+    .header-meta { text-align: right; font-size: 13px; color: #a0aec0; }
+    .header-meta strong { color: #e2e8f0; }
+
+    /* ---- Summary cards ---- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 24px;
+      border-top: 4px solid #cbd5e0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .card .card-value {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .card .card-label { font-size: 13px; color: #718096; text-transform: uppercase;
+                        letter-spacing: 0.6px; font-weight: 500; }
+    .card.total   { border-color: #4a5568; }
+    .card.total   .card-value { color: #2d3748; }
+    .card.high    { border-color: #e53e3e; }
+    .card.high    .card-value { color: #c53030; }
+    .card.medium  { border-color: #ed8936; }
+    .card.medium  .card-value { color: #c05621; }
+    .card.low     { border-color: #ecc94b; }
+    .card.low     .card-value { color: #975a16; }
+
+    /* ---- Section headings ---- */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      margin-bottom: 10px;
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge.HIGH   { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+    .badge.MEDIUM { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
+    .badge.LOW    { background: #fffff0; color: #975a16; border: 1px solid #faf089; }
+
+    /* ---- Findings table ---- */
+    .findings-section { margin-bottom: 32px; }
+    .table-wrap {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #2d3748;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      text-align: left;
+    }
+    tbody tr { border-bottom: 1px solid #edf2f7; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f7fafc; }
+    tbody td { padding: 12px 16px; vertical-align: top; }
+
+    /* Severity stripe on left edge */
+    tbody tr.HIGH   td:first-child { border-left: 3px solid #e53e3e; }
+    tbody tr.MEDIUM td:first-child { border-left: 3px solid #ed8936; }
+    tbody tr.LOW    td:first-child { border-left: 3px solid #ecc94b; }
+
+    .col-resource { width: 14%; font-family: "SF Mono", "Fira Code", monospace;
+                    font-size: 12px; color: #2d3748; font-weight: 500; }
+    .col-check    { width: 18%; font-family: "SF Mono", "Fira Code", monospace;
+                    font-size: 12px; color: #4a5568; }
+    .col-desc     { width: 38%; color: #2d3748; }
+    .col-fix      { width: 30%; color: #718096; font-size: 13px; }
+
+    /* ---- Empty state ---- */
+    .empty {
+      text-align: center;
+      padding: 32px;
+      color: #a0aec0;
+      font-size: 15px;
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #a0aec0;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>AWS IAM <span>Security Audit</span> Report</h1>
+    </div>
+    <div class="header-meta">
+      <div>Scan time: <strong>2026-04-27T20:03:56.691138+00:00</strong></div>
+      <div>Account:&nbsp;&nbsp; <strong>123456789012 (mock)</strong></div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="cards">
+    <div class="card total">
+      <div class="card-value">15</div>
+      <div class="card-label">Total Findings</div>
+    </div>
+    <div class="card high">
+      <div class="card-value">5</div>
+      <div class="card-label">High</div>
+    </div>
+    <div class="card medium">
+      <div class="card-value">8</div>
+      <div class="card-label">Medium</div>
+    </div>
+    <div class="card low">
+      <div class="card-value">2</div>
+      <div class="card-label">Low</div>
+    </div>
+  </div>
+
+  <!-- Findings grouped by severity -->
+  
+  
+  
+  <div class="findings-section">
+    <div class="section-title">
+      <span class="badge HIGH">HIGH</span>
+      5 findings
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-resource">Resource</th>
+            <th class="col-check">Check</th>
+            <th class="col-desc">Description</th>
+            <th class="col-fix">Remediation</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="HIGH">
+            <td class="col-resource">root</td>
+            <td class="col-check">root_account_usage</td>
+            <td class="col-desc">The root account does not have MFA enabled. Root account compromise without MFA allows an attacker immediate, unrestricted access to all AWS resources.</td>
+            <td class="col-fix">Enable MFA on the root account: AWS Console → account menu → Security credentials → Multi-factor authentication (MFA) → Activate MFA. A hardware MFA device is recommended for root.</td>
+          </tr>
+          
+          <tr class="HIGH">
+            <td class="col-resource">carol.white</td>
+            <td class="col-check">users_without_mfa</td>
+            <td class="col-desc">IAM user 'carol.white' has console access but no MFA device is enabled.</td>
+            <td class="col-fix">Assign an MFA device: IAM console → Users → {username} → Security credentials → Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true.</td>
+          </tr>
+          
+          <tr class="HIGH">
+            <td class="col-resource">dave.chen</td>
+            <td class="col-check">users_without_mfa</td>
+            <td class="col-desc">IAM user 'dave.chen' has console access but no MFA device is enabled.</td>
+            <td class="col-fix">Assign an MFA device: IAM console → Users → {username} → Security credentials → Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true.</td>
+          </tr>
+          
+          <tr class="HIGH">
+            <td class="col-resource">henry.nguyen</td>
+            <td class="col-check">users_without_mfa</td>
+            <td class="col-desc">IAM user 'henry.nguyen' has console access but no MFA device is enabled.</td>
+            <td class="col-fix">Assign an MFA device: IAM console → Users → {username} → Security credentials → Assign MFA device. Enforce via IAM policy: deny all actions unless aws:MultiFactorAuthPresent is true.</td>
+          </tr>
+          
+          <tr class="HIGH">
+            <td class="col-resource">AdminWildcardPolicy</td>
+            <td class="col-check">overly_permissive_policies</td>
+            <td class="col-desc">Customer-managed policy 'AdminWildcardPolicy' grants full admin wildcard (Action:* + Resource:*). ARN: arn:aws:iam::123456789012:policy/AdminWildcardPolicy</td>
+            <td class="col-fix">Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy.</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  
+  
+  
+  <div class="findings-section">
+    <div class="section-title">
+      <span class="badge MEDIUM">MEDIUM</span>
+      8 findings
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-resource">Resource</th>
+            <th class="col-check">Check</th>
+            <th class="col-desc">Description</th>
+            <th class="col-fix">Remediation</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">IAMFullAccess</td>
+            <td class="col-check">overly_permissive_policies</td>
+            <td class="col-desc">Customer-managed policy 'IAMFullAccess' grants service-level wildcard action on all resources. ARN: arn:aws:iam::123456789012:policy/IAMFullAccess</td>
+            <td class="col-fix">Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">S3WildcardAllBuckets</td>
+            <td class="col-check">overly_permissive_policies</td>
+            <td class="col-desc">Customer-managed policy 'S3WildcardAllBuckets' grants service-level wildcard action on all resources. ARN: arn:aws:iam::123456789012:policy/S3WildcardAllBuckets</td>
+            <td class="col-fix">Apply the principle of least privilege: replace wildcard actions/resources with the specific actions and resource ARNs the policy actually needs. Use the IAM Access Analyzer policy generation feature to derive a minimal policy.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">eve.martinez</td>
+            <td class="col-check">unused_access_keys</td>
+            <td class="col-desc">Active access key AKIARZPUZDIKJEI6QQ7M for user 'eve.martinez' is 120 day(s) old (never used). Keys should be rotated every 90 days.</td>
+            <td class="col-fix">Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">frank.lee</td>
+            <td class="col-check">unused_access_keys</td>
+            <td class="col-desc">Active access key AKIARZPUZDIKBXO2AFUG for user 'frank.lee' is 180 day(s) old (never used). Keys should be rotated every 90 days.</td>
+            <td class="col-fix">Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">grace.kim</td>
+            <td class="col-check">unused_access_keys</td>
+            <td class="col-desc">Active access key AKIARZPUZDIKK4J7NTPD for user 'grace.kim' is 200 day(s) old (never used). Keys should be rotated every 90 days.</td>
+            <td class="col-fix">Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">henry.nguyen</td>
+            <td class="col-check">unused_access_keys</td>
+            <td class="col-desc">Active access key AKIARZPUZDIKPPKLDTAS for user 'henry.nguyen' is 210 day(s) old (never used). Keys should be rotated every 90 days.</td>
+            <td class="col-fix">Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">svc.deploy</td>
+            <td class="col-check">unused_access_keys</td>
+            <td class="col-desc">Active access key AKIARZPUZDIKBLGAMWZH for user 'svc.deploy' is 365 day(s) old (never used). Keys should be rotated every 90 days.</td>
+            <td class="col-fix">Rotate the key: (1) create a new access key, (2) update all applications or scripts to use the new key, (3) deactivate the old key, (4) verify nothing breaks, then (5) delete the old key.</td>
+          </tr>
+          
+          <tr class="MEDIUM">
+            <td class="col-resource">password_policy</td>
+            <td class="col-check">password_policy</td>
+            <td class="col-desc">No IAM account password policy is configured. Without a policy, IAM users can set any password with no complexity, expiry, or reuse restrictions.</td>
+            <td class="col-fix">Create a password policy: IAM console → Account settings → Edit password policy, or via CLI: aws iam update-account-password-policy --minimum-password-length 14 --require-symbols --require-numbers --require-uppercase-characters --require-lowercase-characters --max-password-age 90 --password-reuse-prevention 24</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  
+  
+  
+  <div class="findings-section">
+    <div class="section-title">
+      <span class="badge LOW">LOW</span>
+      2 findings
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-resource">Resource</th>
+            <th class="col-check">Check</th>
+            <th class="col-desc">Description</th>
+            <th class="col-fix">Remediation</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="LOW">
+            <td class="col-resource">grace.kim</td>
+            <td class="col-check">inactive_users</td>
+            <td class="col-desc">IAM user 'grace.kim' appears inactive: last active 95 day(s) ago (mock data). Threshold is 90 day(s).</td>
+            <td class="col-fix">Confirm whether the user still needs access. If not, disable the login profile and deactivate access keys, or delete the user entirely. Use IAM Access Advisor to verify the last service access dates.</td>
+          </tr>
+          
+          <tr class="LOW">
+            <td class="col-resource">henry.nguyen</td>
+            <td class="col-check">inactive_users</td>
+            <td class="col-desc">IAM user 'henry.nguyen' appears inactive: last active 100 day(s) ago (mock data). Threshold is 90 day(s).</td>
+            <td class="col-fix">Confirm whether the user still needs access. If not, disable the login profile and deactivate access keys, or delete the user entirely. Use IAM Access Advisor to verify the last service access dates.</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  
+
+  
+
+  <div class="footer">
+    Generated by <strong>aws-iam-auditor</strong> &middot;
+    CIS AWS Foundations Benchmark v2.0
+  </div>
+
+</div>
+</body>
+</html>
