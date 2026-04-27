@@ -174,8 +174,8 @@ These are the natural next checks after the current 6:
 
 **Yunjae Jung**
 
-- GitHub: [github.com/YOUR_USERNAME](https://github.com/yoonjae0402)
-- LinkedIn: [linkedin.com/in/YOUR_PROFILE](https://linkedin.com/in/yunjae-jung-99a13b221)
+- GitHub: [github.com/yoonjae0402](https://github.com/yoonjae0402)
+- LinkedIn: [linkedin.com/in/yunjae-jung-99a13b221](https://linkedin.com/in/yunjae-jung-99a13b221)
 
 ---
 
